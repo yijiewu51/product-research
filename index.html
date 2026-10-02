@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>跨境选品数据库 | 中国→英国 | 数据驱动版</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#111;color:#ccc;font-size:13px}
+header{background:#1a1a1a;border-bottom:1px solid #2a2a2a;padding:12px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+header h1{font-size:15px;font-weight:700;color:#e0e0e0}
+header .sub{font-size:11px;color:#555;margin-top:2px}
+.methodology{font-size:10px;color:#4ade80;margin-top:3px}
+.controls{background:#161616;border-bottom:1px solid #222;padding:8px 20px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:10}
+input[type=text]{background:#1e1e1e;border:1px solid #333;color:#ccc;padding:5px 10px;border-radius:4px;font-size:12px;width:160px;outline:none}
+input[type=text]:focus{border-color:#555}
+select{background:#1e1e1e;border:1px solid #333;color:#ccc;padding:5px 10px;border-radius:4px;font-size:12px;outline:none;cursor:pointer}
+.stats{margin-left:auto;display:flex;gap:16px;font-size:11px;color:#555}
+.stat-val{color:#999;font-weight:600}
+.btn{background:#222;border:1px solid #333;color:#999;padding:5px 12px;border-radius:4px;font-size:11px;cursor:pointer}
+.btn:hover{background:#2a2a2a;color:#ccc}
+.wrap{overflow-x:auto;height:calc(100vh - 92px)}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+thead{position:sticky;top:0;z-index:5;background:#1a1a1a}
+th{padding:7px 10px;text-align:left;color:#666;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #2a2a2a;cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:#aaa}
+th.asc::after{content:" ↑";color:#7c6fcd}
+th.desc::after{content:" ↓";color:#7c6fcd}
+td{padding:6px 10px;border-bottom:1px solid #1c1c1c;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tr:hover td{background:#181818}
+.col-id{width:28px;color:#444;text-align:center}
+.col-cn{width:110px;color:#e0e0e0;font-weight:500}
+.col-en{width:160px;color:#888;font-size:12px}
+.col-cat{width:58px}
+.col-ukprice{width:70px;text-align:right}
+.col-cnprice{width:66px;text-align:right}
+.col-ver{width:40px;text-align:center;font-size:10px}
+.col-multi{width:48px;text-align:right}
+.col-margin{width:54px;text-align:right}
+.col-sales{width:90px}
+.col-rank{width:110px;font-size:11px;color:#666}
+.col-comp{width:44px;text-align:center}
+.col-amz{width:56px;text-align:center}
+.col-1688{width:56px;text-align:center}
+.col-note{width:145px;color:#555;font-size:11px}
+
+.m-hi{color:#4ade80;font-weight:600}
+.m-md{color:#facc15}
+.m-lo{color:#f87171}
+.multi-hi{color:#4ade80;font-weight:700}
+.multi-md{color:#facc15;font-weight:600}
+.multi-lo{color:#888}
+.comp-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600}
+.c-极低{background:#052e16;color:#4ade80}
+.c-低{background:#14290a;color:#86efac}
+.c-中{background:#2a1e00;color:#facc15}
+.c-高{background:#2a0a0a;color:#f87171}
+.ver-uk{color:#4ade80;font-size:10px}
+.ver-cn-ok{color:#4ade80;font-size:10px}
+.ver-cn-est{color:#666;font-size:10px}
+.rank-badge{color:#7c6fcd;font-weight:700;margin-right:2px}
+.sales-amz{color:#4ade80;font-weight:600;font-size:12px}
+.sales-amz-badge{display:inline-block;font-size:9px;background:#052e16;color:#4ade80;padding:0 3px;border-radius:2px;margin-left:3px;vertical-align:middle}
+.sales-est{color:#888;font-size:12px}
+.sales-est-badge{display:inline-block;font-size:9px;background:#1e1e1e;color:#555;padding:0 3px;border-radius:2px;margin-left:3px;vertical-align:middle}
+.cat-发饰{color:#f472b6}
+.cat-灯饰{color:#fbbf24}
+.cat-文创{color:#a78bfa}
+.cat-手工{color:#34d399}
+.cat-运动{color:#60a5fa}
+.cat-收纳{color:#fb923c}
+.cat-厨房{color:#fb923c}
+.cat-美甲{color:#f9a8d4}
+.cat-宠物{color:#86efac}
+.cat-园艺{color:#4ade80}
+.link-amz{display:inline-block;padding:2px 6px;background:#1a1200;border:1px solid #ff9900;color:#ff9900;border-radius:3px;font-size:10px;text-decoration:none;font-weight:600}
+.link-amz:hover{background:#2a2000;color:#ffb300}
+.link-1688{display:inline-block;padding:2px 6px;background:#1a0800;border:1px solid #e84c22;color:#e84c22;border-radius:3px;font-size:10px;text-decoration:none;font-weight:600}
+.link-1688:hover{background:#2a1200;color:#ff6a00}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>跨境选品数据库 — 中国 → 英国</h1>
+    <div class="sub">71个产品 | 来源：Amazon UK 真实畅销榜 Top 20 各子类目 | 2026年9月</div>
+    <div class="methodology">✅ UK价=畅销榜实价(100%真实) | 月销🟢=Amazon "bought in past month"真实数据 | 月销灰=评价数量推算 | CN价✓=已验证 est=估算 | 点AMZ↗=Amazon UK产品页 | 点1688↗=1688供应商搜索</div>
+  </div>
+  <button class="btn" onclick="exportCSV()">导出 CSV</button>
+</header>
+<div class="controls">
+  <input type="text" id="q" placeholder="搜索产品..." oninput="render()">
+  <select id="cat" onchange="render()">
+    <option value="">全部类目</option>
+    <option>发饰</option><option>灯饰</option><option>文创</option><option>手工</option>
+    <option>运动</option><option>收纳</option><option>厨房</option><option>美甲</option>
+    <option>宠物</option><option>园艺</option>
+  </select>
+  <select id="multi" onchange="render()">
+    <option value="0">全部倍数</option>
+    <option value="8">8x+</option><option value="6">6x+</option>
+    <option value="5">5x+</option><option value="4">4x+</option>
+  </select>
+  <select id="salesSrc" onchange="render()">
+    <option value="">全部月销</option>
+    <option value="amz">仅Amazon实数</option>
+  </select>
+  <div class="stats">
+    <span>显示 <span class="stat-val" id="s-count">71</span></span>
+    <span>均倍数 <span class="stat-val" id="s-avg">—</span></span>
+    <span>6x+ <span class="stat-val" id="s-hi">—</span>个</span>
+  </div>
+</div>
+<div class="wrap">
+<table id="tbl">
+<thead>
+<tr>
+  <th class="col-id" onclick="sortBy('id')">#</th>
+  <th class="col-cn" onclick="sortBy('cn')">中文名</th>
+  <th class="col-en" onclick="sortBy('en')">英文名</th>
+  <th class="col-cat" onclick="sortBy('cat')">类目</th>
+  <th class="col-ukprice" onclick="sortBy('uk')">UK售价</th>
+  <th class="col-cnprice" onclick="sortBy('cn_p')">进货价</th>
+  <th class="col-ver">价格源</th>
+  <th class="col-multi" onclick="sortBy('multi')">倍数</th>
+  <th class="col-margin" onclick="sortBy('margin')">毛利率</th>
+  <th class="col-sales" onclick="sortBy('sales')">月销量</th>
+  <th class="col-rank" onclick="sortBy('rank')">畅销榜排名</th>
+  <th class="col-comp">竞争</th>
+  <th class="col-amz">Amazon</th>
+  <th class="col-1688">1688</th>
+  <th class="col-note">备注</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<script>
+const AMZ_BASE = 'https://www.amazon.co.uk/dp/';
+const AMZ_CAT = {
+  'ponytail':'https://www.amazon.co.uk/gp/bestsellers/beauty/2867998031',
+  'hair':    'https://www.amazon.co.uk/gp/bestsellers/beauty/2867989031',
+  'lights':  'https://www.amazon.co.uk/gp/bestsellers/lighting/248561031',
+  'wax':     'https://www.amazon.co.uk/gp/bestsellers/officeproduct/9469091031',
+  'craft':   'https://www.amazon.co.uk/gp/bestsellers/officeproduct/9469007031',
+  'jewel':   'https://www.amazon.co.uk/gp/bestsellers/kitchen/3063559031',
+  'resist':  'https://www.amazon.co.uk/gp/bestsellers/sports/26389535031',
+  'yoga':    'https://www.amazon.co.uk/gp/bestsellers/sports/10706951',
+  'drawer':  'https://www.amazon.co.uk/gp/bestsellers/kitchen/3313568031',
+  'kitchen': 'https://www.amazon.co.uk/gp/bestsellers/kitchen/3147441',
+  'nail':    'https://www.amazon.co.uk/gp/bestsellers/beauty/2909189031',
+  'pet_s':   'https://www.amazon.co.uk/gp/bestsellers/pet-supplies/471561031',
+  'pet_d':   'https://www.amazon.co.uk/gp/bestsellers/pet-supplies/471454031',
+  'garden':  'https://www.amazon.co.uk/gp/bestsellers/garden/771242',
+};
+function amzUrl(k){ return (k.startsWith('B')?AMZ_BASE+k:AMZ_CAT[k])||'https://www.amazon.co.uk'; }
+// GBK-encoded 1688 URLs (pre-computed — 1688 uses GBK encoding, not UTF-8)
+const URLS_1688 = [
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B7%A2%C8%A6%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CB%BF%C8%DE%B7%A2%C8%A6%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B6%D0%C3%E6%B7%A2%C8%A6',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CD%B8%C3%F7%CF%F0%C6%A4%BD%EE%CD%B7%C9%FE',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BA%DA%C9%AB%D0%A1%CF%F0%C6%A4%BD%EE%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CE%DE%BA%DB%B7%A2%C8%A6',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C2%DD%D0%FD%B7%A2%C8%A6%B5%E7%BB%B0%CF%DF',
+'https://s.1688.com/selloffer/offer_search.html?keywords=4mm%B4%D6%B7%A2%C8%A6%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B6%D0%C3%E6%CB%AF%C3%B1%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CB%BF%B3%F1%CB%AF%C3%B1%BB%A4%B7%A2%C3%B1',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D1%BC%D7%EC%BC%D0%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D1%BC%D7%EC%B7%D6%C7%F8%BC%D0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B7%A2%BF%A8%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C9%C9%D3%E3%BC%D0%D7%A5%BC%D0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C3%D4%C4%E3%D7%A6%BC%D0%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BF%ED%B7%A2%B9%BF%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D4%CB%B6%AF%B7%A2%B9%BF%BF%ED%B7%A2%B4%F8',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B7%A2%BF%A8U%D0%CD%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D6%D0%BA%C5%D7%A6%BC%D0%D7%A5%B7%A2%BC%D0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=4mm%CE%DE%BD%F0%CA%F4%B7%A2%C8%A6',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CD%AD%CF%DF%B5%C6%B4%AE%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CD%AD%CF%DF%B5%C660%B5%C6',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CD%AD%CF%DF%D0%A1%B4%AE%B5%C66%B0%FC',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B6%A8%CA%B1%CD%AD%CF%DF%B5%C6',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BB%A8%B6%E4%B5%C6%B4%AE%D7%B0%CA%CE',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D5%D5%C6%AC%BC%D0%B5%C6%B4%AE',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D4%B2%C7%F2%B5%C6%B4%AEUSB',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C6%D9%B2%BC%B5%C6%C1%B1%B2%E5%B5%E7',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CD%AD%CF%DF%B5%C6100%B5%C610%C3%D7',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D0%A1%C6%BF%B5%C6%D0%ED%D4%B8%C6%BF%B5%C6%B4%AE',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B7%E2%C0%AF%D6%E9%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B7%E2%C0%AF%D6%E9200%C1%A3',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C6%E1%B7%E2%D3%A1%D5%C2%CC%D7%D7%B0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C6%E1%B7%E2%C0%AF%C9%D7',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C6%E1%B7%E2%CC%D7%D7%B0%C0%F1%BA%D0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C4%E0%D6%E9%C9%A2%D6%E9%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CA%D6%C1%B4%B2%C4%C1%CF%B0%FC%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C1%FA%CF%BA%BF%DB%D4%BF%B3%D7%C8%A6',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B5%AF%C1%A6%B4%AE%D6%E9%CF%DF%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C8%ED%CC%D5%CA%D6%C1%B4%CC%D7%D7%B0%B2%C4%C1%CF',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B5%AF%C1%A6%B4%F8%BD%A1%C9%ED%CC%D7%D7%B0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C5%DD%C4%AD%D6%E1%BD%A1%C9%ED%B9%F6%D6%E1',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D3%E9%BC%D1%B5%E6%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BD%A1%C9%ED%CA%D6%CC%D7%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B5%AF%C1%A6%C8%A6%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CC%F8%C9%FE%BF%C9%B5%F7%BD%DA%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D3%E9%BC%D1%D7%A9EVA%C5%DD%C4%AD',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BD%EE%C4%A4%C7%F2%B0%B4%C4%A6%C7%F2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B3%E9%CC%EB%CA%D5%C4%C9%B8%F1%B7%D6%B8%F4',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%CD%B8%C3%F7%CA%D5%C4%C9%B8%F1%CC%D7%D7%B0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B5%B6%B2%E6%CA%D5%C4%C9%BA%D0%B3%F8%B7%BF',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C3%DC%B7%E2%B4%FC%CA%B3%C6%B7%BC%B6%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BF%D5%C6%F8%D5%A8%B9%F8%D6%BD%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D5%A8%B9%F8%D3%C3%D6%BD',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B3%F8%B7%BF%B5%E7%D7%D3%B3%D3%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BE%AB%C3%DC%B5%E7%D7%D3%B3%D30.01g',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D4%CE%C8%BE%BA%A3%C3%E0%C3%C0%BC%D7',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B9%E2%C1%C6%BC%D7%D3%CD%BD%BA%CC%D7%D7%B0',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C3%C0%BC%D7%CB%AE%D7%EA%C9%C1%D7%EA%C5%FA%B7%A2',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C3%C0%BC%D7%CC%F9%D6%BD%CB%AE%CC%F9%D6%BD',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BC%D9%BC%D7%C6%AC%CD%B8%C3%F7%CC%F9',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B3%E8%CE%EF%CE%B9%CA%B3%CD%EB%D0%A1%B6%AF%CE%EF',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C1%FD%B9%D2%CB%AE%CD%EB%B3%E8%CE%EF',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%D2%B0%C9%FA%B6%AF%CE%EF%CE%B9%CA%B3%CD%EB',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B9%B7%CD%E6%BE%DF%B7%A2%C9%F9%C8%DE%C3%AB',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C5%C0%B3%E6%CB%AE%CD%EB%B3%E8%CE%EF%D3%C3%C6%B7',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B2%DD%D2%A9%C1%C0%C9%B9%BC%DC%C4%BE%D6%CA',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%B1%DA%B9%D2%BB%A8%BC%DC%D6%B2%CE%EF%BC%DC',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BB%A8%C5%E8%BC%DC%CA%D2%C4%DA%C2%E4%B5%D8',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%BD%D7%CC%DD%BB%A8%BC%DC%D5%B9%CA%BE%BC%DC',
+'https://s.1688.com/selloffer/offer_search.html?keywords=%C9%EC%CB%F5%D5%B9%CA%BE%BC%DC%C5%FA%B7%A2',
+];
+
+// Data format:
+// [id, cn, en, cat, uk£, cn£, cnVer(v/e), bsrRank, bsrCat, comp, note, asinOrKey, kw1688, salesNum, salesSrc(amz/est)]
+// salesNum: Amazon "bought in past month" text OR estimated number
+// salesSrc: "amz" = real Amazon badge, "est" = estimated from review count/BSR
+const P = [
+// ══ 发饰 (20) ══
+[1,"弹力发圈 50pcs","Elastic Hair Ties 50pcs (ZHIYE)","发饰",3.99,0.50,"e",1,"Ponytail Holders","低","轻量，极易发货","B0D78JQKYH","发圈批发","50+","amz"],
+[2,"天鹅绒发圈 12pcs","Velvet Scrunchies 12pcs (VENUSTE)","发饰",7.99,1.20,"e",11,"Ponytail Holders","低","4.8★ 3294评","B0B1HPVG3J","丝绒发圈批发","50+","amz"],
+[3,"缎面发圈 6pcs","Satin Scrunchies 6pcs","发饰",3.99,0.70,"e",14,"Ponytail Holders","低","3024评，高复购","B07TXP5S3V","缎面发圈","200+","amz"],
+[4,"透明小橡皮筋 240pcs","Clear Elastic Bands 240pcs","发饰",2.87,0.40,"e",3,"Ponytail Holders","高","竞争激烈","B08VW3F4GM","透明橡皮筋头绳","50+","amz"],
+[5,"黑色小橡皮筋 500pcs","Mini Black Rubber Bands 500pcs","发饰",2.99,0.40,"e",8,"Ponytail Holders","高","需差异化","B0CZQJYHJ8","黑色小橡皮筋批发","100+","amz"],
+[6,"无痕发圈 30pcs","No-Damage Hair Bobbles 30pcs","发饰",3.99,0.60,"e",7,"Ponytail Holders","中","4.6★ 1697评","B0BDFFT61B","无痕发圈","50+","amz"],
+[7,"螺旋电话线发圈 12pcs","Spiral Coil Hair Ties 12pcs","发饰",3.99,0.70,"e",17,"Ponytail Holders","中","无痕，差异化好","B0CPLBQP1S","螺旋发圈电话线","50+","amz"],
+[8,"加粗4mm发圈 40pcs","4mm Thick Hair Bobbles 40pcs","发饰",5.19,0.80,"e",4,"Ponytail Holders","中","4.7★ 2689评","B094Q26PBF","4mm粗发圈批发","50+","amz"],
+[9,"缎面睡眠帽 3pcs","Satin Sleep Bonnet 3-Pack","发饰",5.99,1.20,"e",12,"Hair Styling","低","护发市场增长","B0CLLKMFBC","缎面睡帽批发","100+","amz"],
+[10,"丝绸护发帽 1pc","Silk Hair Wrap Bonnet","发饰",2.99,0.50,"e",7,"Hair Styling","低","3925评，量大","B0BY99LWFJ","丝绸睡帽护发帽","4000+","amz"],
+[11,"鸭嘴发夹 30pcs","Duck Bill Clips 30pcs (HAALII)","发饰",3.99,0.70,"v",15,"Hair Styling","低","新品榜机会大","B0D3L98S15","鸭嘴夹批发","50+","amz"],
+[12,"鸭嘴发夹 36pcs","Duck Bill Clips 36pcs","发饰",4.98,0.80,"v",16,"Hair Styling","低","748评，专业美发款","B0D4579DBB","鸭嘴分区夹","50+","amz"],
+[13,"波浪发卡 200pcs","Bobby Pins 200pcs (Laicky)","发饰",4.99,0.80,"e",14,"Hair Styling","中","1883评，棕色款","B09LVF2YJH","发卡批发","200+","est"],
+[14,"鲨鱼爪子夹 2pcs 大号","Octopus Claw Clips 2pcs Large","发饰",6.99,1.20,"e",10,"Hair Styling","中","8301评，厚发款","B0BVXBCQNJ","鲨鱼夹抓夹","1000+","est"],
+[15,"迷你爪子夹 30pcs","Mini Claw Clips 30pcs","发饰",3.99,0.70,"e",19,"Hair Styling","低","带收纳袋","B09ZQPKJJT","迷你爪夹批发","100+","est"],
+[16,"锯齿宽发箍 3pcs","Zig-Zag Headband 3-Pack","发饰",2.52,0.40,"e",2,"Hair Styling","中","1298评，复古风","B0DSJB38TX","宽发箍批发","200+","est"],
+[17,"宽布运动发箍 2pcs","Wide Fabric Headband 2-Pack","发饰",3.99,0.60,"e",6,"Hair Styling","低","1677评，运动款","B0DJLXMGRH","运动发箍宽发带","200+","est"],
+[18,"波浪发卡 60pcs","Bobby Pins 60pcs","发饰",2.99,0.50,"e",5,"Hair Styling","高","1718评，竞争多","B0BVGRQM8T","发卡U型批发","200+","est"],
+[19,"中号爪子夹 2pcs","Medium Claw Clips 2pcs","发饰",5.99,1.00,"e",4,"Hair Styling","中","5805评，热卖款","B09G3HHZ7F","中号爪夹抓发夹","800+","est"],
+[20,"4mm发圈 32pcs","4mm Hair Bobbles 32pcs","发饰",3.78,0.60,"e",13,"Ponytail Holders","低","2202评","B0BM98M1K7","4mm无金属发圈","300+","est"],
+// ══ 灯饰 (10) ══
+[21,"铜线灯 50LED 5m 电池","Fairy Lights 50LED 5m Battery (Ollny)","灯饰",3.99,0.80,"e",1,"Indoor String Lights","高","5511评，竞争极激烈","B0BQVJLFZR","铜线灯串批发","1000+","est"],
+[22,"铜线灯 60LED 6m 电池","Fairy Lights 60LED 6m Battery","灯饰",3.99,0.80,"e",2,"Indoor String Lights","高","340评，较新","B0H82H89W9","铜线灯60灯","100+","est"],
+[23,"小串灯 6包装 2m 20LED","Fairy Lights 6-Pack 2m 20LED (Jsdoin)","灯饰",5.09,1.00,"e",4,"Indoor String Lights","中","4306评，6包性价比","B0BLYQGD2Z","铜线小串灯6包","800+","est"],
+[24,"定时铜线灯 30LED 3m","Timer Fairy Lights 30LED 3m","灯饰",3.99,0.80,"e",7,"Indoor String Lights","中","226评，新品机会","B0F6CV5FS5","定时铜线灯","50+","est"],
+[25,"樱花装饰灯串 20LED","Cherry Blossom Fairy Lights 20LED","灯饰",5.99,1.20,"e",11,"Indoor String Lights","低","106评，新品大机会","B0FRR1F6VG","花朵灯串装饰","50+","est"],
+[26,"照片夹灯串 50LED 30夹","Photo Clip String Lights 50LED","灯饰",7.21,1.50,"e",17,"Indoor String Lights","低","6138评，卧室必备","B07Z8NC2KG","照片夹灯串","1000+","est"],
+[27,"圆球灯串 15m 100LED","Globe Fairy Lights 15m 100LED","灯饰",13.07,3.00,"e",14,"Indoor String Lights","中","1607评，室内外通用","B089DXYCH2","圆球灯串USB","300+","est"],
+[28,"瀑布灯帘 300LED 3x3m","Curtain Fairy Lights 300LED 3x3m","灯饰",16.98,4.00,"e",19,"Indoor String Lights","低","2953评，婚礼节日款","B01J3OD4I8","瀑布灯帘插电","500+","est"],
+[29,"铜线灯 100LED 10m 电池","Fairy Lights 100LED 10m Battery","灯饰",9.99,2.00,"e",12,"Indoor String Lights","中","2383评","B0CBRFVX8J","铜线灯100灯10米","400+","est"],
+[30,"小瓶灯 2包 20LED 定时","Mini Bottle Fairy Lights 2-Pack","灯饰",5.68,1.20,"e",8,"Indoor String Lights","低","375评，瓶子装饰","B0DR7SVHC1","小瓶灯许愿瓶灯串","100+","est"],
+// ══ 文创 (5) ══
+[31,"漆封蜡珠 100粒","Wax Seal Beads 100pcs (Astaron)","文创",5.99,0.65,"v",1,"Wax Sealing","低","2993评，多色可选","B0B76NL486","封蜡珠批发","500+","est"],
+[32,"漆封蜡珠 200粒","Wax Seal Beads 200pcs (CoKeeSun)","文创",6.59,0.90,"v",2,"Wax Sealing","低","大容量，高评价","wax","封蜡珠200粒","400+","est"],
+[33,"漆封印章套装","Wax Seal Stamp Kit","文创",12.99,2.50,"e",3,"Wax Sealing","低","礼品市场，高溢价","wax","漆封印章套装","100+","est"],
+[34,"漆封蜡勺配件","Wax Sealing Spoon & Accessories","文创",4.99,0.80,"e",4,"Wax Sealing","低","配件，复购高","wax","漆封蜡勺","100+","est"],
+[35,"漆封大套装 310件","Wax Seal Complete Kit 310pcs","文创",16.99,4.00,"e",5,"Wax Sealing","低","入门套装，礼品首选","wax","漆封套装礼盒","100+","est"],
+// ══ 手工 (5) ══
+[36,"泥珠手串套装 5300粒","Clay Heishi Beads DIY Kit 5300pcs","手工",6.99,1.00,"e",4,"Art & Craft","中","DIY手链热潮","craft","泥珠散珠批发","300+","est"],
+[37,"友谊手链编织套装","Friendship Bracelet Making Kit","手工",6.99,1.20,"e",4,"Beading & Jewellery","低","流行DIY款","jewel","手链材料包批发","200+","est"],
+[38,"龙虾扣钥匙圈 10pcs","Lobster Clasp Keyrings 10pcs","手工",5.99,0.80,"e",5,"Beading & Jewellery","低","配件，高复购","jewel","龙虾扣钥匙圈","200+","est"],
+[39,"弹力串珠线","Elastic Beading Cord Roll","手工",3.99,0.60,"e",7,"Beading & Jewellery","中","消耗品，复购高","jewel","弹力串珠线批发","200+","est"],
+[40,"软陶手链DIY套装","Polymer Clay Bracelet DIY Kit","手工",10.99,2.00,"e",9,"Beading & Jewellery","低","高评价，高溢价","jewel","软陶手链套装材料","100+","est"],
+// ══ 运动 (8) ══
+[41,"弹力带套装 5条","Resistance Bands Set 5pcs (Gritin)","运动",6.99,0.80,"v",1,"Resistance Bands","高","115,410评！市场极强","B07L9WLKZQ","弹力带健身套装","9000+","est"],
+[42,"泡沫滚轴 标准款","Foam Roller 30cm Standard","运动",7.99,1.70,"v",17,"Yoga/Pilates","中","经典款","yoga","泡沫轴健身滚轴","500+","est"],
+[43,"瑜伽垫 6mm 防滑","Yoga Mat 6mm Non-slip","运动",8.99,2.00,"e",11,"Yoga/Pilates","高","量大竞争强","yoga","瑜伽垫批发","1000+","est"],
+[44,"健身手套","Workout Weight Lifting Gloves","运动",8.89,1.50,"e",12,"Yoga/Pilates","中","防滑透气款","yoga","健身手套批发","500+","est"],
+[45,"环形弹力带 5条","Resistance Loop Bands 5-Set","运动",5.99,0.80,"e",2,"Resistance Bands","高","量大竞争强","resist","弹力圈批发","2000+","est"],
+[46,"跳绳 可调节","Skipping Jump Rope Adjustable","运动",6.99,1.00,"e",5,"Sports Training","中","稳定需求","yoga","跳绳可调节批发","500+","est"],
+[47,"瑜伽砖 EVA 2pcs","Yoga Block Set 2pcs EVA","运动",8.99,1.80,"e",6,"Yoga/Pilates","中","瑜伽配件","yoga","瑜伽砖EVA泡沫","500+","est"],
+[48,"筋膜按摩球","Massage Fascia Ball Hard","运动",5.99,0.80,"e",8,"Sports Recovery","低","小体积易发货","yoga","筋膜球按摩球","300+","est"],
+// ══ 收纳 (4) ══
+[49,"抽屉整理盒 25件套","Drawer Organizer Set 25pcs (Vtopmart)","收纳",13.99,3.50,"e",1,"Drawer Organisers","低","14,723评！爆款","B0D9XDR312","抽屉收纳格分隔","2000+","est"],
+[50,"透明抽屉格 25件套","Clear Drawer Organizer 25pcs (KICHLY)","收纳",8.99,2.50,"e",2,"Drawer Organisers","低","498评，新品机会","B0CR6D2H4F","透明收纳格套装","100+","est"],
+[51,"刀叉收纳盒","Cutlery Drawer Organizer","收纳",8.49,2.00,"e",11,"Kitchen Storage","低","厨房必备","drawer","刀叉收纳盒厨房","300+","est"],
+[52,"密封保鲜袋 多规格","Resealable Food Storage Bags","收纳",2.99,0.50,"e",14,"Kitchen Storage","高","竞争多","kitchen","密封袋食品级批发","300+","est"],
+// ══ 厨房 (4) ══
+[53,"空气炸锅衬纸 150张","Air Fryer Liners Parchment 150pcs","厨房",7.99,1.50,"e",6,"Air Fryer Accessories","低","消耗品，高复购","kitchen","空气炸锅纸批发","500+","est"],
+[54,"空气炸锅衬纸 100张","Air Fryer Liners Grease Paper 100pcs","厨房",6.99,1.20,"e",9,"Air Fryer Accessories","低","防油防粘","kitchen","炸锅用纸","300+","est"],
+[55,"厨房电子秤 5kg","Digital Kitchen Scale 5kg","厨房",5.99,1.20,"e",5,"Kitchen Scales","高","价格竞争激烈","kitchen","厨房电子秤批发","500+","est"],
+[56,"精密电子秤 200g","Precision Jewelry Scale 200g 0.01g","厨房",7.98,1.50,"e",4,"Precision Scales","中","珠宝/烘焙双用","kitchen","精密电子秤0.01g","300+","est"],
+// ══ 美甲 (5) ══
+[57,"美甲晕染海绵 100pcs","Nail Art Ombre Sponges 100pcs","美甲",4.99,0.50,"e",1,"Nail Art Tools","低","661评，新品机会","B0DP9K15HH","晕染海绵美甲","100+","est"],
+[58,"金银光疗甲油胶 2pcs","Metallic Gel Nail Polish Set 2pcs","美甲",4.99,0.80,"e",2,"Nail Art Polish","低","516评，渐变色热潮","B0DBSJGHR4","光疗甲油胶套装","100+","est"],
+[59,"美甲闪钻套装","Nail Rhinestones Decoration Set","美甲",14.99,2.00,"e",1,"Nail Rhinestones","低","高溢价款","nail","美甲水钻闪钻批发","200+","est"],
+[60,"美甲贴纸图案片","Nail Art Sticker Decal Sheets","美甲",4.79,0.50,"e",3,"Nail Art Stickers","低","轻小，高毛利","nail","美甲贴纸水贴纸","200+","est"],
+[61,"透明美甲延长贴","Clear Nail Extension Tip Stickers","美甲",3.19,0.40,"e",15,"Nail Art Tools","低","极小，高毛利","nail","假甲片透明贴","100+","est"],
+// ══ 宠物 (5) ══
+[62,"刺猬小宠喂食碗","Hedgehog Small Pet Feeding Bowl","宠物",3.23,0.60,"e",1,"Small Animal Accessories","低","细分低竞争","pet_s","宠物喂食碗小动物","100+","est"],
+[63,"笼挂水碗 可拆卸","Cage Hanging Water Bowl Removable","宠物",5.99,1.00,"e",2,"Small Animal Accessories","低","实用配件","pet_s","笼挂水碗宠物","100+","est"],
+[64,"刺猬户外喂水碗","Hedgehog Wildlife Outdoor Feeder","宠物",9.99,1.50,"e",6,"Small Animal Accessories","低","英国野生动物喂养热","pet_s","野生动物喂食碗","100+","est"],
+[65,"狗狗发声绒毛玩具","Squeaky Stuffed Dog Interactive Toy","宠物",6.99,1.20,"e",19,"Dog Toys","中","宠物市场稳定","pet_d","狗玩具发声绒毛","200+","est"],
+[66,"爬虫水碗","Reptile Water Dish Accessories","宠物",5.99,0.90,"e",16,"Small Animal Accessories","低","细分低竞争","pet_s","爬虫水碗宠物用品","100+","est"],
+// ══ 园艺 (5) ══
+[67,"草药晾晒架 木质","Herb Drying Hanging Rack Rustic","园艺",13.99,3.00,"e",7,"Garden Display","低","园艺草药热","garden","草药晾晒架木质","100+","est"],
+[68,"壁挂花盆架","Wall Mounted Plant Shelf Display","园艺",10.99,2.00,"e",14,"Garden Display","低","家居绿植热","garden","壁挂花架植物架","100+","est"],
+[69,"室内花盆支架","Indoor Flower Pot Stand Display","园艺",18.99,4.00,"e",16,"Garden Display","中","中高单价","garden","花盆架室内落地","100+","est"],
+[70,"阶梯式花架","Tiered Plant Stand Ladder Shelf","园艺",16.25,4.00,"e",1,"Plant Display Stands","中","热销款","garden","阶梯花架展示架","200+","est"],
+[71,"伸缩展示架","Expandable Garden Display Shelf","园艺",18.14,4.50,"e",18,"Garden Display","中","可折叠","garden","伸缩展示架批发","100+","est"],
+];
+
+let sortCol=null, sortDir=1;
+function sortBy(col){
+  if(sortCol===col)sortDir*=-1; else{sortCol=col;sortDir=1;}
+  document.querySelectorAll('th').forEach(t=>t.classList.remove('asc','desc'));
+  document.querySelectorAll('th').forEach(t=>{
+    if(t.getAttribute('onclick')===`sortBy('${col}')`)t.classList.add(sortDir===1?'asc':'desc');
+  });
+  render();
+}
+
+function salesNum(s){ // parse "50+", "4000+" etc. to number for sorting
+  return parseInt(s.replace(/[^0-9]/g,''))||0;
+}
+
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const cat=document.getElementById('cat').value;
+  const minMulti=parseFloat(document.getElementById('multi').value)||0;
+  const salesSrc=document.getElementById('salesSrc').value;
+
+  let rows=P.filter(p=>{
+    const [id,cn,en,category,uk,cnp,ver,rank,bsrCat,comp,note,asin,kw,sNum,sSrc]=p;
+    if(cat&&category!==cat)return false;
+    if(minMulti&&uk/cnp<minMulti)return false;
+    if(salesSrc==='amz'&&sSrc!=='amz')return false;
+    if(q&&!cn.toLowerCase().includes(q)&&!en.toLowerCase().includes(q)&&!category.toLowerCase().includes(q))return false;
+    return true;
+  });
+
+  if(sortCol){
+    rows.sort((a,b)=>{
+      const [aid,acn,aen,acat,auk,acnp,aver,arank,,,,,,asNum]=a;
+      const [bid,bcn,ben,bcat,buk,bcnp,bver,brank,,,,,,bsNum]=b;
+      let av,bv;
+      switch(sortCol){
+        case 'id':av=aid;bv=bid;break;
+        case 'cn':av=acn;bv=bcn;break;
+        case 'en':av=aen;bv=ben;break;
+        case 'cat':av=acat;bv=bcat;break;
+        case 'uk':av=auk;bv=buk;break;
+        case 'cn_p':av=acnp;bv=bcnp;break;
+        case 'multi':av=auk/acnp;bv=buk/bcnp;break;
+        case 'margin':av=(auk-acnp)/auk;bv=(buk-bcnp)/buk;break;
+        case 'sales':av=salesNum(asNum);bv=salesNum(bsNum);break;
+        case 'rank':av=arank;bv=brank;break;
+        default:av=aid;bv=bid;
+      }
+      if(typeof av==='string')return sortDir*av.localeCompare(bv);
+      return sortDir*(av-bv);
+    });
+  }
+
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  let totalMulti=0,hiCount=0;
+
+  rows.forEach(p=>{
+    const [id,cn,en,category,uk,cnp,ver,rank,bsrCat,comp,note,asin,kw,sNum,sSrc]=p;
+    const multi=uk/cnp;
+    const margin=((uk-cnp)/uk*100).toFixed(0);
+    totalMulti+=multi;
+    if(multi>=6)hiCount++;
+
+    const mClass=multi>=8?'multi-hi':multi>=6?'multi-md':'multi-lo';
+    const margClass=margin>=80?'m-hi':margin>=70?'m-md':'m-lo';
+    const verUK='<span class="ver-uk">✓UK</span>';
+    const verCN=ver==='v'?'<span class="ver-cn-ok">✓CN</span>':'<span class="ver-cn-est">est</span>';
+    const salesHtml=sSrc==='amz'
+      ?`<span class="sales-amz">${sNum}/月</span><span class="sales-amz-badge">AMZ</span>`
+      :`<span class="sales-est">${sNum}/月</span><span class="sales-est-badge">est</span>`;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td class="col-id" style="color:#444">${id}</td>
+      <td class="col-cn">${cn}</td>
+      <td class="col-en" title="${en}">${en}</td>
+      <td class="col-cat"><span class="cat-${category}">${category}</span></td>
+      <td class="col-ukprice" style="color:#e0e0e0;font-weight:600">£${uk.toFixed(2)}</td>
+      <td class="col-cnprice" style="color:#aaa">£${cnp.toFixed(2)}</td>
+      <td class="col-ver">${verUK}<br>${verCN}</td>
+      <td class="col-multi"><span class="${mClass}">${multi.toFixed(1)}x</span></td>
+      <td class="col-margin"><span class="${margClass}">${margin}%</span></td>
+      <td class="col-sales">${salesHtml}</td>
+      <td class="col-rank"><span class="rank-badge">#${rank}</span>${bsrCat}</td>
+      <td class="col-comp"><span class="comp-badge c-${comp}">${comp}</span></td>
+      <td class="col-amz"><a class="link-amz" href="${amzUrl(asin)}" target="_blank">AMZ↗</a></td>
+      <td class="col-1688"><a class="link-1688" href="${URLS_1688[id-1]}" target="_blank">1688↗</a></td>
+      <td class="col-note" title="${note}">${note}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('s-count').textContent=rows.length;
+  document.getElementById('s-avg').textContent=rows.length?(totalMulti/rows.length).toFixed(1)+'x':'—';
+  document.getElementById('s-hi').textContent=hiCount;
+}
+
+function exportCSV(){
+  const h=['#','中文名','英文名','类目','UK售价(£)','进货价(£)','CN价验证','倍数','毛利率%','月销量','月销数据源','畅销榜排名','子类目','竞争度','Amazon链接','1688链接','备注'];
+  const rows=P.map(([id,cn,en,cat,uk,cnp,ver,rank,bsrCat,comp,note,asin,kw,sNum,sSrc])=>{
+    return[id,`"${cn}"`,`"${en}"`,cat,uk,cnp,ver==='v'?'已验证':'估算',(uk/cnp).toFixed(1)+'x',((uk-cnp)/uk*100).toFixed(0)+'%',sNum,sSrc==='amz'?'Amazon实数':'推算',`#${rank}`,`"${bsrCat}"`,comp,amzUrl(asin),URLS_1688[id-1],`"${note}"`].join(',');
+  });
+  const csv=[h.join(','),...rows].join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='product-research-uk.csv';
+  a.click();
+}
+
+render();
+</script>
+</body>
+</html>
